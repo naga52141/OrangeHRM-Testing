@@ -18,6 +18,24 @@ class AppShellPage(BasePage):
     def click_nav_item(self, name):
         self.click(self.nav_item_locator(name))
 
+    def click_top_tab(self, name):
+        locator = (
+            By.XPATH,
+            f"//*[contains(@class,'oxd-topbar-body-nav-tab') and .//text()[contains(.,'{name}')]]",
+        )
+        self.click(locator)
+
+    def click_dropdown_item(self, name):
+        locator = (By.XPATH, f"//a[text()='{name}']")
+        self.click(locator)
+
+    def open_module_page(self, nav_label, top_tab=None, dropdown_item=None):
+        self.click_nav_item(nav_label)
+        if top_tab:
+            self.click_top_tab(top_tab)
+        if dropdown_item:
+            self.click_dropdown_item(dropdown_item)
+
     def get_page_headers(self):
         def _read(d):
             headers = [h.text for h in d.find_elements(By.CSS_SELECTOR, "h6") if h.text]
