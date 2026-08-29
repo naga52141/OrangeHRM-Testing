@@ -2,7 +2,10 @@
 
 Selenium + Python (pytest) automation suite against the [OrangeHRM public demo](https://opensource-demo.orangehrmlive.com), built with the Page Object Model. Covers login, Admin user management (add/search/delete), PIM employee records, data-table search/filter behavior, and full sidebar/topbar navigation.
 
-**Live report:** published automatically to GitHub Pages on every push — see the repo's About section for the link once the first workflow run completes.
+**Live Allure report:** https://naga52141.github.io/OrangeHRM-Testing/
+**Live pytest-html report:** https://naga52141.github.io/OrangeHRM-Testing/pytest-html-report.html
+
+Both are republished automatically on every push to `main`.
 
 ## What's covered
 
