@@ -51,6 +51,6 @@ class AppShellPage(BasePage):
 
         def _read(d):
             items = [i.text for i in d.find_elements(*self.DROPDOWN_MENU_ITEM) if i.text]
-            return items or False
+            return items if len(items) >= 4 else False
 
         return self.wait.until(_read)
