@@ -20,19 +20,23 @@ class BasePage:
         self.wait.until(EC.element_to_be_clickable(locator)).click()
 
     def type_text(self, locator, text):
-        def _type():
-            el = self.find(locator)
-            el.clear()
-            el.send_keys(text)
+        def _type(d):
+            try:
+                el = d.find_element(*locator)
+                el.clear()
+                el.send_keys(text)
+                return True
+            except StaleElementReferenceException:
+                return False
 
         def _value_stuck(d):
             return (d.find_element(*locator).get_attribute("value") or "") == text
 
-        _type()
+        self.wait.until(_type)
         try:
             self.wait.until(_value_stuck)
         except TimeoutException:
-            _type()
+            self.wait.until(_type)
             self.wait.until(_value_stuck)
 
     def settle_after_filter_input(self):

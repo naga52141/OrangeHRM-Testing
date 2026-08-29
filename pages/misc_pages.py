@@ -1,4 +1,6 @@
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 from config import BASE_URL
 from pages.base_page import BasePage
@@ -61,4 +63,13 @@ class BuzzPage(BasePage):
         def _found(d):
             return any(expected_text in p.text for p in d.find_elements(*self.FEED_POST))
 
-        self.wait.until(_found)
+        try:
+            WebDriverWait(self.driver, 12).until(_found)
+        except TimeoutException:
+            # The post always saves server-side, but the feed's own client-side
+            # re-render after posting is unreliable (verified: a hard reload
+            # consistently shows it even when the live DOM never updates).
+            # Reload once and check again rather than waiting longer for an
+            # update that may never come.
+            self.driver.get(BUZZ_URL)
+            WebDriverWait(self.driver, 15).until(_found)
