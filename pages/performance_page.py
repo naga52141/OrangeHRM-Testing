@@ -25,7 +25,7 @@ class PerformancePage(BasePage):
         return self._read_toast()
 
     def delete_kpi_by_name(self, name):
-        row_locator = (By.XPATH, f"//div[@role='row'][.//div[contains(text(),'{name}')]]")
+        row_locator = (By.XPATH, f"//div[@role='row'][.//div[contains(.,'{name}')]]")
         row = self.find(row_locator)
         row.find_element(By.CSS_SELECTOR, ".bi-trash").click()
         self.click((By.XPATH, "//button[normalize-space()='Yes, Delete']"))

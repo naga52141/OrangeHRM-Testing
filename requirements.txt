@@ -5,3 +5,4 @@ pytest-html>=4.1
 allure-pytest>=2.13
 pytest-rerunfailures>=14.0
 pytest-xdist>=3.5
+selenium-axe-python>=2.2

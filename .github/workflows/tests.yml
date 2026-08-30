@@ -75,3 +75,40 @@ jobs:
       - name: Fail job if tests failed
         if: steps.pytest.outcome == 'failure'
         run: exit 1
+
+  cross_browser:
+    # Fast, proven-stable subset only (login + client-side form validation,
+    # neither of which touch the flaky search endpoints) across Chrome and
+    # Firefox. Running the full 100+ test suite on both browsers would
+    # roughly double the load this workflow already puts on the shared
+    # public demo, for coverage this smoke subset already proves.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome, firefox]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Chrome
+        if: matrix.browser == 'chrome'
+        uses: browser-actions/setup-chrome@v2
+
+      - name: Set up Firefox
+        if: matrix.browser == 'firefox'
+        uses: browser-actions/setup-firefox@v1
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run cross-browser smoke tests
+        env:
+          HEADLESS: "true"
+          BROWSER: ${{ matrix.browser }}
+        run: pytest tests/test_login.py tests/test_negative_validation.py -v

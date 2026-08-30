@@ -50,6 +50,7 @@ class BuzzPage(BasePage):
     POST_TEXTAREA = (By.CSS_SELECTOR, "textarea")
     POST_BUTTON = (By.XPATH, "//button[normalize-space()='Post']")
     FEED_POST = (By.CSS_SELECTOR, ".orangehrm-buzz-post-body-text")
+    TOAST_MESSAGE = (By.CSS_SELECTOR, ".oxd-toast-content-text")
 
     def navigate(self):
         self.driver.get(BUZZ_URL)
@@ -73,3 +74,20 @@ class BuzzPage(BasePage):
             # update that may never come.
             self.driver.get(BUZZ_URL)
             WebDriverWait(self.driver, 15).until(_found)
+
+    def delete_post(self, post_text):
+        # text() misses this text (split across nested elements/interpolation,
+        # the same recurring node-splitting gotcha), so match on "." instead.
+        text_el = self.find((By.XPATH, f"//*[contains(.,'{post_text}') and contains(@class,'body-text')]"))
+        container = text_el.find_element(
+            By.XPATH, "./ancestor::div[contains(@class,'orangehrm-buzz-post-body')]/.."
+        )
+        container.find_element(By.CSS_SELECTOR, ".bi-three-dots").click()
+        self.click((By.XPATH, "//p[normalize-space()='Delete Post']"))
+        self.click((By.XPATH, "//button[normalize-space()='Yes, Delete']"))
+
+        def _read_toast(d):
+            texts = [e.text for e in d.find_elements(*self.TOAST_MESSAGE) if e.text]
+            return " ".join(texts) or False
+
+        return self.wait.until(_read_toast)

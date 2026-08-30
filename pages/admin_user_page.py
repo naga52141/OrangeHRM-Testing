@@ -35,6 +35,8 @@ class AdminUserPage(BasePage):
     TOAST_MESSAGE = (By.CSS_SELECTOR, ".oxd-toast-content-text")
     NO_RECORDS_TEXT = (By.XPATH, "//span[normalize-space(.)='No Records Found']")
     SELECTED_COUNT_TEXT = (By.XPATH, "//span[contains(.,'Selected')]")
+    TABLE_HEADER_CELL = (By.CSS_SELECTOR, ".oxd-table-header-cell")
+    HEADER_SORT_ICON = (By.CSS_SELECTOR, ".oxd-table-header-sort-icon")
 
     def navigate(self):
         self.driver.get(ADMIN_USERS_URL)
@@ -73,6 +75,19 @@ class AdminUserPage(BasePage):
             return rows[0].text if rows else False
 
         return self.wait.until(_read)
+
+    def sort_by_column(self, column_index, direction):
+        self.find(self.TABLE_ROWS)
+        headers = self.wait.until(lambda d: d.find_elements(*self.TABLE_HEADER_CELL) or False)
+        headers[column_index].find_element(*self.HEADER_SORT_ICON).click()
+
+        def _visible_direction_option(d):
+            options = d.find_elements(By.XPATH, f"//li[normalize-space()='{direction}']")
+            visible = [o for o in options if o.is_displayed()]
+            return visible or False
+
+        self.wait.until(_visible_direction_option)[0].click()
+        self.settle_after_filter_input()
 
     def edit_first_result_status(self, new_status):
         self.click(self.ROW_EDIT_ICON)

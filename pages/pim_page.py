@@ -15,7 +15,7 @@ class PimPage(BasePage):
     EMPLOYEE_ID_SEARCH_INPUT = (By.XPATH, "//label[text()='Employee Id']/../..//input")
     SEARCH_BUTTON = (By.CSS_SELECTOR, "button[type='submit']")
 
-    EMPLOYEE_ID_VALUE = (By.XPATH, "//label[contains(text(),'Employee Id')]/../..//input")
+    EMPLOYEE_ID_VALUE = (By.XPATH, "//label[contains(.,'Employee Id')]/../..//input")
 
     RECORDS_FOUND_TEXT = (By.XPATH, "//span[contains(.,'Record Found') or contains(.,'Records Found')]")
     NO_RECORDS_TEXT = (By.XPATH, "//span[normalize-space(.)='No Records Found']")
@@ -29,6 +29,9 @@ class PimPage(BasePage):
     PAGINATION_ITEM = (By.CSS_SELECTOR, ".oxd-pagination-page-item")
     TABLE_HEADER_CELL = (By.CSS_SELECTOR, ".oxd-table-header-cell")
     HEADER_SORT_ICON = (By.CSS_SELECTOR, ".oxd-table-header-sort-icon")
+
+    CONTACT_DETAILS_TAB = (By.XPATH, "//a[text()='Contact Details']")
+    CITY_INPUT = (By.XPATH, "//label[text()='City']/../..//input")
 
     def navigate(self):
         self.driver.get(PIM_EMPLOYEE_LIST_URL)
@@ -99,3 +102,18 @@ class PimPage(BasePage):
 
         self.wait.until(_visible_direction_option)[0].click()
         self.settle_after_filter_input()
+
+    def edit_contact_details_city(self, city):
+        self.click(self.CONTACT_DETAILS_TAB)
+        self.type_text(self.CITY_INPUT, city)
+        self.click(self.SAVE_BUTTON)
+
+        def _read_toast(d):
+            texts = [e.text for e in d.find_elements(*self.TOAST_MESSAGE) if e.text]
+            return " ".join(texts) or False
+
+        return self.wait.until(_read_toast)
+
+    def get_contact_details_city(self):
+        self.driver.get(self.driver.current_url)
+        return self.get_attribute_when_populated(self.CITY_INPUT, "value")
