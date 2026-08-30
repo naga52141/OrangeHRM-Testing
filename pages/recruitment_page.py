@@ -12,6 +12,7 @@ class RecruitmentPage(BasePage):
     FIRST_NAME_INPUT = (By.NAME, "firstName")
     LAST_NAME_INPUT = (By.NAME, "lastName")
     EMAIL_INPUT = (By.XPATH, "//label[text()='Email']/../..//input")
+    RESUME_FILE_INPUT = (By.CSS_SELECTOR, "input[type='file']")
     SAVE_BUTTON = (By.XPATH, "//button[normalize-space()='Save']")
 
     CANDIDATE_NAME_SEARCH_INPUT = (By.XPATH, "//label[text()='Candidate Name']/../..//input")
@@ -29,11 +30,14 @@ class RecruitmentPage(BasePage):
         self.driver.get(CANDIDATES_URL)
         self.find(self.RECORDS_FOUND_TEXT)
 
-    def add_candidate(self, first_name, last_name, email):
+    def add_candidate(self, first_name, last_name, email, resume_path=None):
         self.click(self.ADD_BUTTON)
         self.type_text(self.FIRST_NAME_INPUT, first_name)
         self.type_text(self.LAST_NAME_INPUT, last_name)
         self.type_text(self.EMAIL_INPUT, email)
+        if resume_path:
+            self.find(self.RESUME_FILE_INPUT).send_keys(resume_path)
+            self.wait.until(lambda d: resume_path.split("/")[-1] in d.page_source)
         self.click(self.SAVE_BUTTON)
         self.wait.until(EC.url_contains("addCandidate"))
 

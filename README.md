@@ -20,9 +20,14 @@ Both are republished automatically on every push to `main`.
 - **Dashboard** — key widgets present (Time at Work, My Actions, Quick Launch, Buzz Latest Posts, etc.)
 - **Directory** — employee search returns result cards
 - **Buzz** — create a post and confirm it appears in the live feed
-- **Recruitment** — add candidate, search by name (autocomplete), no-match search
-- **Performance** — add a KPI through a custom dropdown
+- **Recruitment** — add candidate (with resume file upload), search by name (autocomplete), no-match search, delete
+- **Performance** — add and delete a KPI through a custom dropdown
 - **Claim** — submit a claim end-to-end (Event, Currency, Remarks)
+- **Update/Edit** — edit an existing Admin user's status and verify it persists
+- **Negative validation** — mismatched passwords, empty required fields, invalid email format
+- **Data tables** — pagination (page 1 vs page 2 shows different rows) and column sorting (ascending/descending via the header dropdown) on the PIM employee list
+- **Bulk selection** — multi-row checkbox selection updates the "N Selected" indicator and enables Delete Selected
+- **Cleanup** — Admin/PIM/Recruitment/Performance tests delete what they create, so repeat runs don't keep growing the shared demo's dataset
 
 ## Running locally
 
@@ -37,6 +42,12 @@ Tests run headless by default. To watch them in a real browser window:
 
 ```bash
 HEADLESS=false pytest tests/ -v
+```
+
+To run faster locally (`pytest-xdist`, not enabled by default since it multiplies load on the shared demo):
+
+```bash
+pytest tests/ -n 4
 ```
 
 ## Reports

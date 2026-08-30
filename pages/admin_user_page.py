@@ -25,12 +25,16 @@ class AdminUserPage(BasePage):
 
     RECORDS_FOUND_TEXT = (By.XPATH, "//span[contains(.,'Record Found') or contains(.,'Records Found')]")
     TABLE_ROWS = (By.CSS_SELECTOR, ".oxd-table-card")
-    ROW_CHECKBOX = (By.CSS_SELECTOR, ".oxd-table-row .oxd-checkbox-input")
+    # Scoped to the table body: the unscoped ".oxd-table-row .oxd-checkbox-input"
+    # also matches the header's "select all" checkbox, since the header row
+    # shares the .oxd-table-row class.
+    ROW_CHECKBOX = (By.CSS_SELECTOR, ".oxd-table-body .oxd-checkbox-input")
     ROW_EDIT_ICON = (By.CSS_SELECTOR, ".oxd-table-row .bi-pencil-fill")
     DELETE_SELECTED_BUTTON = (By.XPATH, "//button[normalize-space()='Delete Selected']")
     CONFIRM_DELETE_BUTTON = (By.XPATH, "//button[normalize-space()='Yes, Delete']")
     TOAST_MESSAGE = (By.CSS_SELECTOR, ".oxd-toast-content-text")
     NO_RECORDS_TEXT = (By.XPATH, "//span[normalize-space(.)='No Records Found']")
+    SELECTED_COUNT_TEXT = (By.XPATH, "//span[contains(.,'Selected')]")
 
     def navigate(self):
         self.driver.get(ADMIN_USERS_URL)
@@ -85,6 +89,14 @@ class AdminUserPage(BasePage):
         toast_text = self.wait.until(_read_toast)
         self.wait.until(EC.url_contains("viewSystemUsers"))
         return toast_text
+
+    def select_first_n_rows(self, n):
+        checkboxes = self.wait.until(lambda d: d.find_elements(*self.ROW_CHECKBOX) or False)
+        for checkbox in checkboxes[:n]:
+            checkbox.click()
+
+    def get_selected_count_text(self):
+        return self.get_text(self.SELECTED_COUNT_TEXT)
 
     def delete_first_result(self):
         self.click(self.ROW_CHECKBOX)

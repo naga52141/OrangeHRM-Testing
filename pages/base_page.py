@@ -46,6 +46,17 @@ class BasePage:
         # this as done, so a short fixed wait is the practical workaround.
         time.sleep(2.5)
 
+    def get_field_errors(self):
+        from selenium.webdriver.common.by import By
+
+        locator = (By.CSS_SELECTOR, ".oxd-input-field-error-message")
+
+        def _read(d):
+            errors = [e.text for e in d.find_elements(*locator) if e.text]
+            return errors or False
+
+        return self.wait.until(_read)
+
     def get_attribute_when_populated(self, locator, attribute):
         return self.wait.until(
             lambda d: d.find_element(*locator).get_attribute(attribute) or False
