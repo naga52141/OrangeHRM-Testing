@@ -22,9 +22,20 @@ class PerformancePage(BasePage):
         self.type_text(self.KPI_NAME_INPUT, name)
         self.select_custom_dropdown_first_option(self.JOB_TITLE_DROPDOWN_INDEX)
         self.click(self.SAVE_BUTTON)
+        return self._read_toast()
 
-        def _read_toast(d):
+    def delete_kpi_by_name(self, name):
+        row_locator = (By.XPATH, f"//div[@role='row'][.//div[contains(text(),'{name}')]]")
+        row = self.find(row_locator)
+        row.find_element(By.CSS_SELECTOR, ".bi-trash").click()
+        self.click((By.XPATH, "//button[normalize-space()='Yes, Delete']"))
+        toast_text = self._read_toast()
+        self.settle_after_filter_input()
+        return toast_text
+
+    def _read_toast(self):
+        def _read(d):
             texts = [e.text for e in d.find_elements(*self.TOAST_MESSAGE) if e.text]
             return " ".join(texts) or False
 
-        return self.wait.until(_read_toast)
+        return self.wait.until(_read)

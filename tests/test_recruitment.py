@@ -3,7 +3,7 @@ import uuid
 from pages.recruitment_page import RecruitmentPage
 
 
-def test_add_candidate_appears_in_search(logged_in_driver):
+def test_add_search_delete_candidate(logged_in_driver):
     page = RecruitmentPage(logged_in_driver)
     last_name = f"QA{uuid.uuid4().hex[:6]}"
 
@@ -13,6 +13,12 @@ def test_add_candidate_appears_in_search(logged_in_driver):
     page.navigate()
     page.search_by_name(last_name)
     assert page.get_records_found_count() == 1
+
+    toast_text = page.delete_first_result()
+    assert "Success" in toast_text
+    # The already-filtered list updates in place; re-searching by name would
+    # fail since the deleted candidate no longer has an autocomplete match.
+    assert page.has_no_records()
 
 
 def test_candidate_search_with_no_match_shows_no_records(logged_in_driver):

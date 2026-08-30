@@ -20,11 +20,11 @@ def test_add_search_delete_user(logged_in_driver):
     page.search_by_username(unique_username)
     assert page.get_records_found_count() == 1
 
-    page.delete_first_result()
-    assert page.get_text(page.TOAST_MESSAGE)
-
-    page.navigate()
-    page.search_by_username(unique_username)
+    toast_text = page.delete_first_result()
+    assert "Success" in toast_text
+    # Check the already-filtered list in place rather than re-navigating and
+    # re-searching, which would race the page's own default (unfiltered)
+    # fetch on load - this was the source of this test's earlier flakiness.
     assert page.has_no_records()
 
 

@@ -44,7 +44,7 @@ class BasePage:
         # the DOM input value updates. Submitting immediately can race an in-flight
         # default-list fetch and get the unfiltered results back. No DOM signal marks
         # this as done, so a short fixed wait is the practical workaround.
-        time.sleep(1.5)
+        time.sleep(2.5)
 
     def get_attribute_when_populated(self, locator, attribute):
         return self.wait.until(

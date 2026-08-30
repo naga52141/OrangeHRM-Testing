@@ -21,6 +21,10 @@ class RecruitmentPage(BasePage):
     RECORDS_FOUND_TEXT = (By.XPATH, "//span[contains(.,'Record Found') or contains(.,'Records Found')]")
     NO_RECORDS_TEXT = (By.XPATH, "//span[normalize-space(.)='No Records Found']")
 
+    ROW_DELETE_ICON = (By.CSS_SELECTOR, ".oxd-table-row .bi-trash")
+    CONFIRM_DELETE_BUTTON = (By.XPATH, "//button[normalize-space()='Yes, Delete']")
+    TOAST_MESSAGE = (By.CSS_SELECTOR, ".oxd-toast-content-text")
+
     def navigate(self):
         self.driver.get(CANDIDATES_URL)
         self.find(self.RECORDS_FOUND_TEXT)
@@ -50,3 +54,15 @@ class RecruitmentPage(BasePage):
 
     def has_no_records(self):
         return self.is_visible(self.NO_RECORDS_TEXT)
+
+    def delete_first_result(self):
+        self.click(self.ROW_DELETE_ICON)
+        self.click(self.CONFIRM_DELETE_BUTTON)
+
+        def _read_toast(d):
+            texts = [e.text for e in d.find_elements(*self.TOAST_MESSAGE) if e.text]
+            return " ".join(texts) or False
+
+        toast_text = self.wait.until(_read_toast)
+        self.settle_after_filter_input()
+        return toast_text
