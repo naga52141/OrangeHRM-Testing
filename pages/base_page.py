@@ -1,6 +1,10 @@
 import time
 
-from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    StaleElementReferenceException,
+    TimeoutException,
+)
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -17,7 +21,23 @@ class BasePage:
         return self.wait.until(EC.presence_of_all_elements_located(locator))
 
     def click(self, locator):
-        self.wait.until(EC.element_to_be_clickable(locator)).click()
+        # EC.element_to_be_clickable checks visible+enabled but not whether a
+        # transient overlay (e.g. a loading spinner) is covering the element,
+        # so a single click right after the wait can still be intercepted.
+        # Firefox's Marionette driver enforces this strictly and fails
+        # immediately where Chrome tends to tolerate the same timing gap -
+        # retry the whole find-and-click rather than doing it once.
+        def _click(d):
+            el = EC.element_to_be_clickable(locator)(d)
+            if not el:
+                return False
+            try:
+                el.click()
+                return True
+            except ElementClickInterceptedException:
+                return False
+
+        self.wait.until(_click)
 
     def type_text(self, locator, text):
         def _type(d):
