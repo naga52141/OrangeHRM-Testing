@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from config import ADMIN_USERS_URL
+from config import ADMIN_USERNAME, ADMIN_USERS_URL
 from pages.base_page import BasePage
 
 
@@ -91,9 +91,30 @@ class AdminUserPage(BasePage):
         return toast_text
 
     def select_first_n_rows(self, n):
-        checkboxes = self.wait.until(lambda d: d.find_elements(*self.ROW_CHECKBOX) or False)
-        for checkbox in checkboxes[:n]:
-            checkbox.click()
+        # Re-query fresh before each click rather than clicking a cached list
+        # of elements: selecting one row can re-render the table and leave
+        # the remaining cached references stale, silently dropping clicks.
+        # Confirm the "N Selected" count actually incremented before moving
+        # on to the next row, rather than assuming the click landed.
+        def _count_shows(d, expected):
+            els = d.find_elements(*self.SELECTED_COUNT_TEXT)
+            return any(f"({expected})" in e.text for e in els)
+
+        selected = 0
+        index = 0
+        while selected < n:
+            rows = self.wait.until(lambda d: d.find_elements(*self.TABLE_ROWS) or False)
+            checkboxes = self.wait.until(lambda d: d.find_elements(*self.ROW_CHECKBOX) or False)
+            # OrangeHRM silently ignores attempts to select the currently
+            # logged-in Admin's own row for bulk deletion, so skip it rather
+            # than waiting forever for a selected-count bump that never comes.
+            if rows[index].text.splitlines()[0] == ADMIN_USERNAME:
+                index += 1
+                continue
+            checkboxes[index].click()
+            selected += 1
+            self.wait.until(lambda d, expected=selected: _count_shows(d, expected))
+            index += 1
 
     def get_selected_count_text(self):
         return self.get_text(self.SELECTED_COUNT_TEXT)
