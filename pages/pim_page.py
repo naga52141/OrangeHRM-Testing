@@ -115,5 +115,10 @@ class PimPage(BasePage):
         return self.wait.until(_read_toast)
 
     def get_contact_details_city(self):
+        # The save toast confirms the client-side request succeeded, but an
+        # immediate hard reload can still race the backend actually
+        # committing it - same pattern as the delete-then-verify races fixed
+        # elsewhere in this suite. Give it a beat before reloading.
+        self.settle_after_filter_input()
         self.driver.get(self.driver.current_url)
         return self.get_attribute_when_populated(self.CITY_INPUT, "value")
