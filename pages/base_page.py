@@ -76,6 +76,23 @@ class BasePage:
         option_xpath = (By.XPATH, f"//div[@role='listbox']//span[text()='{option_text}']")
         self.click(option_xpath)
 
+    def select_custom_dropdown_first_option(self, dropdown_index):
+        # Some dropdowns (e.g. Job Title) are populated from data other users
+        # of this shared demo can add to or remove from, so picking by exact
+        # name is fragile. Picks the first real option, skipping the
+        # "-- Select --" placeholder.
+        from selenium.webdriver.common.by import By
+
+        dropdowns = self.wait.until(
+            lambda d: d.find_elements(By.CSS_SELECTOR, ".oxd-select-text") or False
+        )
+        dropdowns[dropdown_index].click()
+        options_locator = (By.XPATH, "//div[@role='listbox']//span")
+        options = self.wait.until(
+            lambda d: [o for o in d.find_elements(*options_locator) if o.text != "-- Select --"] or False
+        )
+        options[0].click()
+
     def pick_first_autocomplete_option(self, input_locator, search_text):
         from selenium.webdriver.common.by import By
 

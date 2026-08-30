@@ -1,6 +1,8 @@
 # OrangeHRM Selenium Test Suite
 
-Selenium + Python (pytest) automation suite against the [OrangeHRM public demo](https://opensource-demo.orangehrmlive.com), built with the Page Object Model. 89 tests covering login, every module in the app (top-level pages down to second-level sub-tabs), and real CRUD/interaction flows including a custom JS calendar date picker.
+[![OrangeHRM Selenium Tests](https://github.com/naga52141/OrangeHRM-Testing/actions/workflows/tests.yml/badge.svg)](https://github.com/naga52141/OrangeHRM-Testing/actions/workflows/tests.yml)
+
+Selenium + Python (pytest) automation suite against the [OrangeHRM public demo](https://opensource-demo.orangehrmlive.com), built with the Page Object Model. 93 tests covering login, every module in the app (top-level pages down to second-level sub-tabs), and real CRUD/interaction flows including a custom JS calendar date picker.
 
 **Live Allure report:** https://naga52141.github.io/OrangeHRM-Testing/
 **Live pytest-html report:** https://naga52141.github.io/OrangeHRM-Testing/pytest-html-report.html
@@ -18,6 +20,9 @@ Both are republished automatically on every push to `main`.
 - **Dashboard** — key widgets present (Time at Work, My Actions, Quick Launch, Buzz Latest Posts, etc.)
 - **Directory** — employee search returns result cards
 - **Buzz** — create a post and confirm it appears in the live feed
+- **Recruitment** — add candidate, search by name (autocomplete), no-match search
+- **Performance** — add a KPI through a custom dropdown
+- **Claim** — submit a claim end-to-end (Event, Currency, Remarks)
 
 ## Running locally
 
@@ -48,4 +53,4 @@ allure serve allure-results
 
 ## CI/CD
 
-`.github/workflows/tests.yml` runs the suite headless on every push to `main`, then publishes both the Allure report and the pytest-html report to the `gh-pages` branch.
+`.github/workflows/tests.yml` runs the suite headless on every push to `main` and once nightly at 03:00 UTC (to catch drift on the shared demo — e.g. another user changing the system language — even when nobody's pushing), then publishes both the Allure report and the pytest-html report to the `gh-pages` branch. Failing tests get up to 2 automatic reruns (`pytest-rerunfailures`) before being counted as real failures, since this is a live public demo shared by everyone practicing Selenium against it and occasionally slow under load.
