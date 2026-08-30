@@ -1,3 +1,5 @@
+import time
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -31,6 +33,7 @@ class PimPage(BasePage):
     HEADER_SORT_ICON = (By.CSS_SELECTOR, ".oxd-table-header-sort-icon")
 
     CONTACT_DETAILS_TAB = (By.XPATH, "//a[text()='Contact Details']")
+    PERSONAL_DETAILS_TAB = (By.XPATH, "//a[text()='Personal Details']")
     CITY_INPUT = (By.XPATH, "//label[text()='City']/../..//input")
 
     def navigate(self):
@@ -115,10 +118,14 @@ class PimPage(BasePage):
         return self.wait.until(_read_toast)
 
     def get_contact_details_city(self):
-        # The save toast confirms the client-side request succeeded, but an
-        # immediate hard reload can still race the backend actually
-        # committing it - same pattern as the delete-then-verify races fixed
-        # elsewhere in this suite. Give it a beat before reloading.
-        self.settle_after_filter_input()
-        self.driver.get(self.driver.current_url)
+        # The save toast fires optimistically - the value shows correctly in
+        # the form immediately, but the actual backend commit measured up to
+        # ~15s in testing. Navigating away before it lands doesn't just read
+        # stale data, it appears to abandon the in-flight save outright
+        # (value permanently empty after, confirmed via direct inspection,
+        # not merely slow to appear). Wait for the commit before navigating
+        # at all, whether via reload or in-app tabs.
+        time.sleep(15)
+        self.click(self.PERSONAL_DETAILS_TAB)
+        self.click(self.CONTACT_DETAILS_TAB)
         return self.get_attribute_when_populated(self.CITY_INPUT, "value")
