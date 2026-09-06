@@ -79,6 +79,13 @@ def driver():
         drv = _build_firefox_driver()
     else:
         drv = _build_chrome_driver()
+    # Firefox's default network timeout has shown up as a hard failure
+    # (Reached error page: netTimeout) on nights this shared demo was
+    # especially slow, while Chrome tolerated the same conditions. Setting
+    # an explicit, generous page load timeout on both keeps the two
+    # browsers behaving consistently instead of relying on each one's own
+    # differing internal default.
+    drv.set_page_load_timeout(90)
     if not HEADLESS:
         drv.maximize_window()
     yield drv
