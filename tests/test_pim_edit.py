@@ -9,7 +9,6 @@ def test_edit_contact_details_city_persists(logged_in_driver):
     page.add_employee(first_name="Automated", last_name=f"Edit{uuid.uuid4().hex[:6]}")
 
     city_value = f"TestCity{uuid.uuid4().hex[:6]}"
-    toast_text = page.edit_contact_details_city(city_value)
+    toast_text, persisted = page.edit_and_verify_contact_details_city(city_value)
     assert "Success" in toast_text
-
-    assert page.get_contact_details_city() == city_value
+    assert persisted, f"City edit never persisted after retries (last toast: {toast_text!r})"

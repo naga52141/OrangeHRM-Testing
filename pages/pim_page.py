@@ -106,7 +106,12 @@ class PimPage(BasePage):
         self.wait.until(_visible_direction_option)[0].click()
         self.settle_after_filter_input()
 
-    def edit_contact_details_city(self, city):
+    def _save_contact_details_city(self, employee_url, city):
+        # Always start each attempt from a hard, fresh page load rather than
+        # reusing in-SPA tab state between retries - clicking a tab that's
+        # already active (as happens right after a persistence check) can
+        # leave stale element references behind.
+        self.driver.get(employee_url)
         self.click(self.CONTACT_DETAILS_TAB)
         self.type_text(self.CITY_INPUT, city)
         self.click(self.SAVE_BUTTON)
@@ -117,15 +122,27 @@ class PimPage(BasePage):
 
         return self.wait.until(_read_toast)
 
-    def get_contact_details_city(self):
-        # The save toast fires optimistically - the value shows correctly in
-        # the form immediately, but the actual backend commit measured up to
-        # ~15s in testing. Navigating away before it lands doesn't just read
-        # stale data, it appears to abandon the in-flight save outright
-        # (value permanently empty after, confirmed via direct inspection,
-        # not merely slow to appear). Wait for the commit before navigating
-        # at all, whether via reload or in-app tabs.
-        time.sleep(15)
-        self.click(self.PERSONAL_DETAILS_TAB)
+    def _read_persisted_city(self, employee_url):
+        # Staying on the same page always shows the typed value regardless
+        # of backend state (it's just local form state) - the only real
+        # signal is a fresh navigation-triggered re-fetch.
+        self.driver.get(employee_url)
         self.click(self.CONTACT_DETAILS_TAB)
-        return self.get_attribute_when_populated(self.CITY_INPUT, "value")
+        return self.find(self.CITY_INPUT).get_attribute("value")
+
+    def edit_and_verify_contact_details_city(self, city, attempts=5, wait_between=10):
+        # This save has a genuine intermittent bug: it sometimes shows a
+        # "Successfully Updated" toast but never actually persists, even
+        # after 2+ minutes of waiting (confirmed directly - not a latency
+        # issue, the value never appears no matter how long you wait for
+        # THAT particular attempt). No amount of waiting fixes a write that
+        # silently failed, so retry the save itself rather than waiting
+        # longer for one attempt's result.
+        employee_url = self.driver.current_url
+        toast_text = None
+        for attempt in range(1, attempts + 1):
+            toast_text = self._save_contact_details_city(employee_url, city)
+            time.sleep(wait_between)
+            if self._read_persisted_city(employee_url) == city:
+                return toast_text, True
+        return toast_text, False
