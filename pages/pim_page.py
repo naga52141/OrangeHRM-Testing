@@ -130,7 +130,7 @@ class PimPage(BasePage):
         self.click(self.CONTACT_DETAILS_TAB)
         return self.find(self.CITY_INPUT).get_attribute("value")
 
-    def edit_and_verify_contact_details_city(self, city, attempts=5, wait_between=10):
+    def edit_and_verify_contact_details_city(self, city, attempts=2, wait_between=10):
         # This save has a genuine intermittent bug: it sometimes shows a
         # "Successfully Updated" toast but never actually persists, even
         # after 2+ minutes of waiting (confirmed directly - not a latency
