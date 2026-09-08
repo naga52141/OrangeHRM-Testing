@@ -50,7 +50,12 @@ LEAVE_PAGES = [
 
 TIME_PAGES = [
     ("Time", "Attendance", "My Records", "attendance/viewMyAttendanceRecord", "Attendance"),
-    ("Time", "Attendance", "Punch In/Out", "attendance/punchIn", "Punch In"),
+    # This page is stateful: it shows Punch In or Punch Out depending on
+    # whether the shared demo account is currently clocked in, which can
+    # flip due to any concurrent user of this account (or an earlier run of
+    # this very test) clicking Punch In without a matching Punch Out. Both
+    # states mean the page loaded correctly, so both are accepted.
+    ("Time", "Attendance", "Punch In/Out", ("attendance/punchIn", "attendance/punchOut"), ("Punch In", "Punch Out")),
     ("Time", "Attendance", "Employee Records", "attendance/viewAttendanceRecord", "Attendance"),
     ("Time", "Attendance", "Configuration", "attendance/configure", "Attendance Configuration"),
     ("Time", "Reports", "Project Reports", "time/displayProjectReportCriteria", "Reports"),
@@ -101,10 +106,17 @@ MY_INFO_TABS = [
 
 @pytest.mark.parametrize("nav_label, top_tab, dropdown_item, url_fragment, expected_header", ALL_MODULE_PAGES)
 def test_module_page_loads(logged_in_driver, nav_label, top_tab, dropdown_item, url_fragment, expected_header):
+    # url_fragment / expected_header are normally a single string, but a
+    # handful of pages are stateful (e.g. Punch In/Out) and can legitimately
+    # land on one of several outcomes - accept a tuple of alternatives too.
+    url_fragments = (url_fragment,) if isinstance(url_fragment, str) else url_fragment
+    expected_headers = (expected_header,) if isinstance(expected_header, str) else expected_header
+
     page = AppShellPage(logged_in_driver)
     page.open_module_page(nav_label, top_tab=top_tab, dropdown_item=dropdown_item)
-    page.wait.until(lambda d: url_fragment in d.current_url)
-    assert expected_header in page.get_page_headers()
+    page.wait.until(lambda d: any(f in d.current_url for f in url_fragments))
+    headers = page.get_page_headers()
+    assert any(h in headers for h in expected_headers)
 
 
 @pytest.mark.parametrize("tab_label, url_fragment", MY_INFO_TABS)
