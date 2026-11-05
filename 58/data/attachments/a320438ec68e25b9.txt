@@ -1,2 +1,0 @@
-
-Login accessibility violations by impact: {'serious': ['html-has-lang'], 'moderate': ['landmark-one-main', 'page-has-heading-one']}
