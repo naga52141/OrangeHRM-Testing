@@ -1,0 +1,2 @@
+
+Dashboard accessibility violations by impact: {'minor': ['aria-allowed-role', 'presentation-role-conflict'], 'critical': ['button-name', 'image-alt'], 'serious': ['color-contrast', 'html-has-lang', 'list', 'scrollable-region-focusable'], 'moderate': ['landmark-one-main', 'page-has-heading-one', 'region']}
