@@ -1,0 +1,2 @@
+
+Admin Users accessibility violations by impact: {'minor': ['aria-allowed-role', 'empty-table-header', 'presentation-role-conflict'], 'critical': ['button-name', 'label'], 'serious': ['color-contrast', 'html-has-lang', 'list'], 'moderate': ['landmark-one-main', 'page-has-heading-one', 'region']}
